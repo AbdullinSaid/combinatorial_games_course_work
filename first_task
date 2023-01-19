@@ -1,0 +1,86 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <map>
+
+using namespace std;
+
+void build_graph(int n,
+                 map<vector<int>, vector<vector<int>>>& graph,
+                 map<vector<int>, vector<vector<int>>>& reversed_graph,
+                 map<vector<int>, int>& degree) {
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            graph[{i, j}].size(); //Just to insert graph in map
+            reversed_graph[{i, j}].size();
+            for (int k = 1; k <= i && k <= j; ++k) {
+                graph[{i, j}].push_back({i - k, j - k});
+                degree[{i, j}]++;
+                reversed_graph[{i - k, j - k}].push_back({i, j});
+            }
+            for (int k = 1; k <= i; ++k) {
+                graph[{i, j}].push_back({i - k, j});
+                degree[{i, j}]++;
+                reversed_graph[{i - k, j}].push_back({i, j});
+            }
+            for (int k = 1; k <= j; ++k) {
+                graph[{i, j}].push_back({i, j - k});
+                degree[{i, j}]++;
+                reversed_graph[{i, j - k}].push_back({i, j});
+            }
+        }
+    }
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    map<vector<int>, int> answer;
+    map<vector<int>, vector<vector<int>>> graph;
+    map<vector<int>, vector<vector<int>>> reversed_graph;
+    map<vector<int>, int> degree;
+    build_graph(n, graph, reversed_graph, degree);
+
+    queue<vector<int> > zero_degree;
+    for (const auto &v: graph) {
+        if (v.second.empty()) {
+            zero_degree.push(v.first);
+            answer[v.first] = 0;
+        }
+    }
+    int current_answer = 1;
+    while (!zero_degree.empty()) {
+        queue<vector<int> > new_zero_degree;
+
+        while (!zero_degree.empty()) {
+            auto v = zero_degree.front();
+            zero_degree.pop();
+            for (const auto &vertex: reversed_graph[v]) {
+                if (answer[vertex] == 0) {
+                    answer[vertex] = current_answer;
+                    for (const auto &vertex_to_cut_edge: reversed_graph[vertex]) {
+                        degree[vertex_to_cut_edge]--;
+                        if (degree[vertex_to_cut_edge] == 0) {
+                            new_zero_degree.push(vertex_to_cut_edge);
+                            answer[vertex_to_cut_edge] = current_answer + 1;
+                        }
+                    }
+                }
+            }
+        }
+        zero_degree = new_zero_degree;
+        current_answer += 2;
+    }
+
+    for (const auto& ans : answer) {
+        if (ans.second % 2 == 0) {
+            for (auto i: ans.first) {
+                cout << i << ' ';
+            }
+            cout << endl;
+        }
+    }
+
+    return 0;
+}
