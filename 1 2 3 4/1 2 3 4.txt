@@ -1,5 +1,3 @@
-C:\Users\s21b1\CLionProjects\contest3\cmake-build-debug\contest3.exe
-25
 0 0 0 0
 0 0 1 1
 0 0 2 2
